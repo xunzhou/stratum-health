@@ -1,0 +1,9 @@
+servers:
+  - host: us1.ethermine.org
+    port: 4444
+  - host: us2.ethermine.org
+    port: 4444
+    protocol: stratum1  # optional, default to stratum2
+  - host: us2.ethermine.org
+    port: 5555 
+    tls: true  # optional, default to false
