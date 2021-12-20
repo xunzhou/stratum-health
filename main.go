@@ -11,6 +11,7 @@ import (
 
 	"net/http"
 
+	"github.com/goji/httpauth"
 	stratum_ping "github.com/xunzhou/stratum-ping"
 	"gopkg.in/yaml.v2"
 )
@@ -18,15 +19,19 @@ import (
 type Server struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
-	Protocol string `default:"stratum2" yaml:"protocol",omitempty`
-	TLS      bool   `default:false yaml:"tls",omitempty`
+	Protocol string `yaml:"protocol,omitempty"`
+	TLS      bool   `yaml:"tls,omitempty"`
 }
 
-type Servers struct {
-	List []Server `yaml:"servers"`
+type Config struct {
+	Servers []Server `yaml:"servers"`
+	Cred    struct {
+		User   string `yaml:"user"`
+		Passwd string `yaml:"passwd"`
+	} `yaml:"cred"`
 }
 
-var servers Servers
+var config Config
 var PORT = ":3001"
 
 func cli_ping() {
@@ -98,7 +103,7 @@ func ping(proto, host string, port int, tls bool) string {
 		Host:  host,
 		Port:  strconv.Itoa(port),
 		Ipv6:  false,
-		Proto: "stratum2",
+		Proto: proto,
 		Tls:   tls,
 	}
 	res := pinger.Do()
@@ -120,10 +125,15 @@ func all(w http.ResponseWriter, r *http.Request) {
 	logging(r)
 }
 
+func HandlerFunc(p string, f func(http.ResponseWriter, *http.Request)) {
+	http.Handle(p, httpauth.SimpleBasicAuth("user", "password")(http.HandlerFunc(f)))
+}
+
 func handleRequests() {
-	http.HandleFunc("/", status)
-	http.HandleFunc("/all", all)
-	log.Println("Listening on" + PORT)
+	HandlerFunc("/", status)
+	HandlerFunc("/all", all)
+
+	log.Println("Listening on " + PORT)
 	log.Fatal(http.ListenAndServe(PORT, nil))
 }
 
@@ -133,7 +143,7 @@ func loadConfig() {
 		panic(err)
 	}
 
-	err = yaml.Unmarshal(data, &servers)
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)
 	}
@@ -141,7 +151,7 @@ func loadConfig() {
 
 func pingAll() string {
 	res := ""
-	for _, s := range servers.List {
+	for _, s := range config.Servers {
 		if s.Protocol == "" {
 			s.Protocol = "stratum2"
 		}

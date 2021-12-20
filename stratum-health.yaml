@@ -7,3 +7,6 @@ servers:
   - host: us2.ethermine.org
     port: 5555 
     tls: true  # optional, default to false
+cred:
+  user: user
+  passwd: password
