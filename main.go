@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -95,7 +96,7 @@ func cli_ping() {
 	fmt.Println(pinger.Do())
 }
 
-func ping(proto, host string, port int, tls bool) string {
+func ping(proto, host string, port int, tls bool) stratum_ping.Result {
 	pinger := stratum_ping.StratumPinger{
 		Login: "0x0000",
 		Pass:  "",
@@ -106,8 +107,7 @@ func ping(proto, host string, port int, tls bool) string {
 		Proto: proto,
 		Tls:   tls,
 	}
-	res := pinger.Do()
-	return res
+	return pinger.Do()
 }
 
 func logging(r *http.Request) {
@@ -150,15 +150,19 @@ func loadConfig() {
 }
 
 func pingAll() string {
-	res := ""
+	// res := ""
+	res := map[string]stratum_ping.Result{}
 	for _, s := range config.Servers {
 		if s.Protocol == "" {
 			s.Protocol = "stratum2"
 		}
 		// fmt.Printf("[TLS:%t] %s://%s:%d\n", s.TLS, s.Protocol, s.Host, s.Port)
-		res += fmt.Sprintf("%s:%d\n%s\n", s.Host, s.Port, ping(s.Protocol, s.Host, s.Port, s.TLS))
+		// res += fmt.Sprintf("%s:%d\n%s\n", s.Host, s.Port, ping(s.Protocol, s.Host, s.Port, s.TLS))
+		key := fmt.Sprintf("%s:%d", s.Host, s.Port)
+		res[key] = ping(s.Protocol, s.Host, s.Port, s.TLS)
 	}
-	return res
+	j, _ := json.Marshal(res)
+	return string(j)
 }
 
 func main() {
@@ -166,7 +170,7 @@ func main() {
 		cli_ping()
 	} else {
 		loadConfig()
-		// pingAll()
+		// fmt.Println(pingAll())
 	}
 
 	handleRequests()

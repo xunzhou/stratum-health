@@ -1,7 +1,7 @@
 github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d h1:lBXNCxVENCipq4D1Is42JVOP4eQjlB8TQ6H69Yx5J9Q=
 github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d/go.mod h1:nnjvkQ9ptGaCkuDUx6wNykzzlUixGxvkme+H/lnzb+A=
-github.com/xunzhou/stratum-ping v1.0.2 h1:WcbIwLUcTMPXxBrWl0wt7BtC0CyQbHOyuju71kemC24=
-github.com/xunzhou/stratum-ping v1.0.2/go.mod h1:mY9J4101ShpDs9UNaCfNcAK3fUTKaKGpxrsfNUMSOxg=
+github.com/xunzhou/stratum-ping v1.0.4 h1:Uq9C2T8OEE9fpGglTjqWXdQIDYnVTvJiWgTXq5qZUFU=
+github.com/xunzhou/stratum-ping v1.0.4/go.mod h1:+E8YDlT1xAnTq71O+JXQXOyWPev0nnM8Y3IGXIU7Ys8=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
