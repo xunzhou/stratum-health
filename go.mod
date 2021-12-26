@@ -5,7 +5,7 @@ go 1.17
 // replace github.com/xunzhou/stratum-ping => ../stratum-ping
 
 require (
-	github.com/xunzhou/stratum-ping v1.0.4
+	github.com/xunzhou/stratum-ping v1.0.5
 	gopkg.in/yaml.v2 v2.4.0
 )
 

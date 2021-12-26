@@ -90,13 +90,10 @@ func cli_ping() {
 		Tls:   *argTLS,
 	}
 
-	// if err := pinger.Do(); err != nil {
-	// 	fmt.Printf("%s\n\n", err)
-	// }
 	fmt.Println(pinger.Do())
 }
 
-func ping(proto, host string, port int, tls bool) stratum_ping.Result {
+func ping(proto, host string, port int, tls bool, ch chan stratum_ping.Result) stratum_ping.Result {
 	pinger := stratum_ping.StratumPinger{
 		Login: "0x0000",
 		Pass:  "",
@@ -107,7 +104,9 @@ func ping(proto, host string, port int, tls bool) stratum_ping.Result {
 		Proto: proto,
 		Tls:   tls,
 	}
-	return pinger.Do()
+	res := pinger.Do()
+	ch <- res
+	return res
 }
 
 func logging(r *http.Request) {
@@ -151,16 +150,21 @@ func loadConfig() {
 
 func pingAll() string {
 	// res := ""
-	res := map[string]stratum_ping.Result{}
+	res := []stratum_ping.Result{}
+	ch := make(chan stratum_ping.Result)
+
 	for _, s := range config.Servers {
 		if s.Protocol == "" {
 			s.Protocol = "stratum2"
 		}
-		// fmt.Printf("[TLS:%t] %s://%s:%d\n", s.TLS, s.Protocol, s.Host, s.Port)
-		// res += fmt.Sprintf("%s:%d\n%s\n", s.Host, s.Port, ping(s.Protocol, s.Host, s.Port, s.TLS))
-		key := fmt.Sprintf("%s:%d", s.Host, s.Port)
-		res[key] = ping(s.Protocol, s.Host, s.Port, s.TLS)
+		go ping(s.Protocol, s.Host, s.Port, s.TLS, ch)
 	}
+
+	for i := 0; i < len(config.Servers); i++ {
+		pingRes := <-ch
+		res = append(res, pingRes)
+	}
+
 	j, _ := json.Marshal(res)
 	return string(j)
 }

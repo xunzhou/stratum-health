@@ -11,19 +11,42 @@ $ ./stratum-health
 ```
 ### Client: 
 ```
-$ curl 127.0.0.1:3001/
+$ curl 127.0.0.1:3001
+Unauthorized
+$ curl user:password@127.0.0.1:3001
 OK
 
-$ curl 127.0.0.1:3001/all
-us1.ethermine.org:4444
-5 packets transmitted, 5 received, 0% packet loss, time 5.21856889s
-min/avg/max = 31.053059ms, 31.956277ms, 32.594635ms
-
-us2.ethermine.org:4444
-5 packets transmitted, 5 received, 0% packet loss, time 5.221494083s
-min/avg/max = 31.6581ms, 32.238997ms, 32.885343ms
-
-us2.ethermine.org:5555
-5 packets transmitted, 5 received, 0% packet loss, time 5.529270909s
-min/avg/max = 29.850313ms, 72.723995ms, 237.733442ms
+$ curl -s user:password@127.0.0.1:3001/all | jq 
+[
+  {
+    "Host": "us2.ethermine.org:4444",
+    "Trans": 5,
+    "Recev": 5,
+    "Loss": 0,
+    "Time": 5218481655,
+    "Min": "30.728607ms",
+    "Avg": "31.58873ms",
+    "Max": "32.828504ms"
+  },
+  {
+    "Host": "us1.ethermine.org:4444",
+    "Trans": 5,
+    "Recev": 5,
+    "Loss": 0,
+    "Time": 5229126465,
+    "Min": "31.520419ms",
+    "Avg": "33.345364ms",
+    "Max": "39.09858ms"
+  },
+  {
+    "Host": "us2.ethermine.org:5555",
+    "Trans": 5,
+    "Recev": 5,
+    "Loss": 0,
+    "Time": 5308782304,
+    "Min": "29.364105ms",
+    "Avg": "31.946676ms",
+    "Max": "39.190233ms"
+  }
+]
 ```
