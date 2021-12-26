@@ -9,8 +9,7 @@ $ ./stratum-health
 2021/12/19 22:41:18 Listening on:3001
 
 # Docker
-$ docker run -it -v $(pwd)/stratum-health.yaml:/app/stratum-health.yaml -p80:3001 stratum-health
-...
+$ docker run  -it -v $(pwd)/stratum-health.yaml:/app/stratum-health.yaml -p3001:3001  ghcr.io/xunzhou/stratum-health
 ```
 ### Client: 
 ```
