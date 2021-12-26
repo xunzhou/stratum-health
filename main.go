@@ -30,10 +30,15 @@ type Config struct {
 		User   string `yaml:"user"`
 		Passwd string `yaml:"passwd"`
 	} `yaml:"cred"`
+	Tls struct {
+		Cert string `yaml:"cert"`
+		Priv string `yaml:"key"`
+	} `yaml:"tls",omitempty`
 }
 
 var config Config
 var PORT = ":3001"
+var TLSPORT = ":8443"
 
 func cli_ping() {
 	argLogin := flag.String("u", "0x0000000000000000000000000000000000000000", "login")
@@ -125,15 +130,21 @@ func all(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlerFunc(p string, f func(http.ResponseWriter, *http.Request)) {
-	http.Handle(p, httpauth.SimpleBasicAuth("user", "password")(http.HandlerFunc(f)))
+	http.Handle(p, httpauth.SimpleBasicAuth(config.Cred.User, config.Cred.Passwd)(http.HandlerFunc(f)))
 }
 
 func handleRequests() {
 	HandlerFunc("/", status)
 	HandlerFunc("/all", all)
 
-	log.Println("Listening on " + PORT)
-	log.Fatal(http.ListenAndServe(PORT, nil))
+	if len(config.Tls.Cert) == 0 || len(config.Tls.Priv) == 0 {
+		log.Println("Listening on " + PORT)
+		log.Fatal(http.ListenAndServe(PORT, nil))
+	} else {
+		log.Println("Listening on TLS " + TLSPORT)
+		log.Fatal(http.ListenAndServeTLS(TLSPORT, config.Tls.Cert, config.Tls.Priv, nil))
+	}
+
 }
 
 func loadConfig() {

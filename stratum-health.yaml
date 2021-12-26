@@ -10,3 +10,6 @@ servers:
 cred:
   user: user
   passwd: password
+tls:                # optional
+  cert: server.crt  # path for tls cert
+  key: server.key   # path for tls private key

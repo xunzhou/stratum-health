@@ -1,2 +1,4 @@
 gin-bin
 stratum-health
+*.crt
+*.key
