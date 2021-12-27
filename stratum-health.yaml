@@ -13,3 +13,6 @@ cred:
 tls:                # optional
   cert: server.crt  # path for tls cert
   key: server.key   # path for tls private key
+ethermine-api-proxy:  # optional
+  enable: true      
+  miner: 0xea674fdde714fd979de3edf0f56aa9716b898ec8

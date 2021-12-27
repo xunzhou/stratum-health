@@ -14,6 +14,7 @@ import (
 
 	"github.com/goji/httpauth"
 	stratum_ping "github.com/xunzhou/stratum-ping"
+	"gopkg.in/DataDog/dd-trace-go.v1/contrib/gorilla/mux"
 	"gopkg.in/yaml.v2"
 )
 
@@ -34,6 +35,10 @@ type Config struct {
 		Cert string `yaml:"cert"`
 		Priv string `yaml:"key"`
 	} `yaml:"tls",omitempty`
+	Apiproxy struct {
+		Enable bool   `yaml:"enable"`
+		Miner  string `yaml:"miner"`
+	} `yaml:"ethermine-api-proxy",omitempty`
 }
 
 var config Config
@@ -123,19 +128,50 @@ func status(w http.ResponseWriter, r *http.Request) {
 	logging(r)
 }
 
+func api(w http.ResponseWriter, r *http.Request) {
+	uri := strings.Replace(r.RequestURI, "/api", "", 1)
+	fmt.Fprint(w, apireq(uri))
+	logging(r)
+}
+
 func all(w http.ResponseWriter, r *http.Request) {
 	res := pingAll()
 	fmt.Fprintf(w, "%s", res)
 	logging(r)
 }
 
+func apireq(uri string) string {
+	resp, err := http.Get("https://api.ethermine.org" + uri)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	log.Printf("Remote API Server >> GET https://api.ethermine.org" + uri)
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	return string(body)
+}
+
+var router = mux.NewRouter()
+
 func HandlerFunc(p string, f func(http.ResponseWriter, *http.Request)) {
-	http.Handle(p, httpauth.SimpleBasicAuth(config.Cred.User, config.Cred.Passwd)(http.HandlerFunc(f)))
+	router.HandleFunc(p, f).Methods("GET")
+	http.Handle(p, httpauth.SimpleBasicAuth(config.Cred.User, config.Cred.Passwd)(router))
 }
 
 func handleRequests() {
 	HandlerFunc("/", status)
 	HandlerFunc("/all", all)
+	if config.Apiproxy.Enable {
+		miner := config.Apiproxy.Miner
+		HandlerFunc("/api", api)
+		HandlerFunc("/api/{.*}stats", api)
+		HandlerFunc("/api/miner/"+miner+"/dashboard", api)
+		HandlerFunc("/api/miner/"+miner+"/dashboard/payouts", api)
+		HandlerFunc("/api/miner/"+miner+"/worker/{worker}/history", api)
+	}
 
 	if len(config.Tls.Cert) == 0 || len(config.Tls.Priv) == 0 {
 		log.Println("Listening on " + PORT)
