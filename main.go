@@ -162,8 +162,8 @@ func HandlerFunc(p string, f func(http.ResponseWriter, *http.Request)) {
 }
 
 func handleRequests() {
-	HandlerFunc("/", status)
-	HandlerFunc("/all", all)
+	HandlerFunc("/health", status)
+	HandlerFunc("/checkall", all)
 	if config.Apiproxy.Enable {
 		miner := config.Apiproxy.Miner
 		HandlerFunc("/api", api)
