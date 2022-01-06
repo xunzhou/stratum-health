@@ -35,6 +35,7 @@ type Config struct {
 		Cert string `yaml:"cert"`
 		Priv string `yaml:"key"`
 	} `yaml:"tls",omitempty`
+	Port     string `yaml:"port"`
 	Apiproxy struct {
 		Enable bool   `yaml:"enable"`
 		Miner  string `yaml:"miner"`
@@ -42,8 +43,7 @@ type Config struct {
 }
 
 var config Config
-var PORT = ":3001"
-var TLSPORT = ":8443"
+var port string
 
 func cli_ping() {
 	argLogin := flag.String("u", "0x0000000000000000000000000000000000000000", "login")
@@ -162,8 +162,9 @@ func HandlerFunc(p string, f func(http.ResponseWriter, *http.Request)) {
 }
 
 func handleRequests() {
-	HandlerFunc("/health", status)
-	HandlerFunc("/checkall", all)
+	HandlerFunc("/", status)
+	HandlerFunc("/api/health", status)
+	HandlerFunc("/api/health/ping", all)
 	if config.Apiproxy.Enable {
 		miner := config.Apiproxy.Miner
 		HandlerFunc("/api", api)
@@ -174,11 +175,11 @@ func handleRequests() {
 	}
 
 	if len(config.Tls.Cert) == 0 || len(config.Tls.Priv) == 0 {
-		log.Println("Listening on " + PORT)
-		log.Fatal(http.ListenAndServe(PORT, nil))
+		log.Println("Listening on " + (port))
+		log.Fatal(http.ListenAndServe(port, nil))
 	} else {
-		log.Println("Listening on TLS " + TLSPORT)
-		log.Fatal(http.ListenAndServeTLS(TLSPORT, config.Tls.Cert, config.Tls.Priv, nil))
+		log.Println("Listening on TLS " + port)
+		log.Fatal(http.ListenAndServeTLS(port, config.Tls.Cert, config.Tls.Priv, nil))
 	}
 
 }
@@ -193,6 +194,7 @@ func loadConfig() {
 	if err != nil {
 		panic(err)
 	}
+	port = ":" + config.Port
 }
 
 func pingAll() string {
